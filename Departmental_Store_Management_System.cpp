@@ -61,16 +61,16 @@ public:
         cout << "Remaining Amount:\t" << amount << '\n';
         cout << "Product Prize:\t\t" << prize << '\n';
     }
-    bool check_available()
+    bool check_available(int y)
     {
-        if(amount>0)
+        if(amount-y>=0)
             return true;
         return false;
     }
-    int make_bill()
+    int make_bill(int y)
     {
-        amount--;
-        return prize;
+        amount-=y;
+        return y*prize;
     }
     void save(ofstream &myfile)
     {
@@ -96,12 +96,71 @@ int buy_product()
     cout << "Which Product You Want to Bye?\n";
     int x;
     cin >> x;
+    cout << "How Many Product You Want to Bye?\n";
+    int y;
+    cin >> y;
     a=product_list[x-1];
-    if(x>a.total_product || !a.check_available())
+    if(x>a.total_product || !a.check_available(y))
         return -1;
-    int tmp=a.make_bill();
+    int tmp=a.make_bill(y);
     product_list[x-1]=a;
     return tmp;
+}
+
+bool edit_product()
+{
+    product a;
+    cout << "\n\n";
+    for(int i=0; i<a.total_product; i++)
+    {
+        cout << "Product Number #" << i+1 << '\n';
+        product_list[i].view_all_product();
+        cout << "\n";
+    }
+    cout << "Which Product You Want to Edit?\n";
+    int x;
+    cin >> x;
+    if(x>a.total_product)
+        return false;
+    a=product_list[x-1];
+    int y;
+    string str;
+    cout << "\n\nDo you want to edit product name?\n\n1.\tYes\n2.\tNo\n";
+    cin >> y;
+    if(y==1)
+    {
+        cout << "Enter Edited Product Name:\t";
+        cin >> str;
+        a.set_name(str);
+    }
+    cout << "\n\nDo you want to edit product Color?\n\n1.\tYes\n2.\tNo\n";
+    cin >> y;
+    if(y==1)
+    {
+        cout << "Enter Edited Product Color:\t";
+        cin >> str;
+        a.set_color(str);
+    }
+    cout << "\n\nDo you want to edit product Amount?\n\n1.\tYes\n2.\tNo\n";
+    cin >> y;
+    if(y==1)
+    {
+        cout << "Enter Edited Product Amount:\t";
+        cin >> str;
+        a.set_amount(str);
+    }
+    cout << "\n\nDo you want to edit product Prize?\n\n1.\tYes\n2.\tNo\n";
+    cin >> y;
+    if(y==1)
+    {
+        cout << "Enter Edited Product Prize:\t";
+        cin >> str;
+        a.set_prize(str);
+    }
+
+    product_list[x-1]=a;
+
+    return true;
 }
 
 bool main_menu()
@@ -109,8 +168,9 @@ bool main_menu()
     logo();
     cout << "1.\tAdd Product\n";
     cout << "2.\tView all Product\n";
-    cout << "3.\tBuy Product\n";
-    cout << "4.\tClose Program (Press any other key)\n";
+    cout << "3.\tEdit Product List\n";
+    cout << "4.\tBuy Product\n";
+    cout << "5.\tClose Program (Press any other key)\n";
     int x;
     cin >> x;
     if(x==1)
@@ -131,6 +191,25 @@ bool main_menu()
     }
     else if(x==3)
     {
+        while(1)
+        {
+            bool f=edit_product();
+            if(!f)
+            {
+                cout << "\n\nProduct Not Available.\n\nEdit Another Product?\n1.\tYes\n2.\tNo\n";
+            }
+            else
+            {
+                cout << "\n\nEdit Successful.\n\nEdit Another Product?\n1.\tYes\n2.\tNo\n";
+            }
+            int x;
+            cin >> x;
+            if(x==2)
+                break;
+        }
+    }
+    else if(x==4)
+    {
         int sum=0;
         while(1)
         {
@@ -149,19 +228,22 @@ bool main_menu()
             if(x==2)
                 break;
         }
-        string name,mobile;
-        cout << "Enter your name:\t";
-        cin >> name;
-        cout << "Enter your phone no:\t";
-        cin >> mobile;
-        cout << "Your Bill is:\t" << sum << " taka (only)\n";
+        if(sum>0)
+        {
+            string name,mobile;
+            cout << "Enter your name:\t";
+            cin >> name;
+            cout << "Enter your phone no:\t";
+            cin >> mobile;
+            cout << "Your Bill is:\t" << sum << " taka (only)\n";
 
-        ofstream myfile;
-        myfile.open ("customer.txt",ios_base::app);
-        myfile << "Customer Name:\t" << name << '\n';
-        myfile << "Customer Phone No:\t" << mobile << '\n';
-        myfile << "Customer Bill:\t" << sum << "\n\n";
-        myfile.close();
+            ofstream myfile;
+            myfile.open ("customer.txt",ios_base::app);
+            myfile << "Customer Name:\t" << name << '\n';
+            myfile << "Customer Phone No:\t" << mobile << '\n';
+            myfile << "Customer Bill:\t" << sum << "\n\n";
+            myfile.close();
+        }
 
     }
     else
@@ -172,7 +254,7 @@ bool main_menu()
     return true;
 }
 
-int main()
+void gather_previous_data()
 {
     product a;
     int flag=0;
@@ -190,11 +272,14 @@ int main()
         else if(flag==3)
             a.set_prize(str);
         flag++;
-        if(flag==4)
+        if(flag==4 and a.check_available(1))
             product_list[a.total_product++]=a;
     }
     myfiles.close();
+}
 
+void write_date()
+{
     string date;
     cout << "Enter Todays Date (dd-mm-yyyy):\t";
     cin >> date;
@@ -203,17 +288,33 @@ int main()
     myfile.open ("customer.txt",ios_base::app);
     myfile << date << "\n\n";
     myfile.close();
+}
 
-    while(main_menu())
-    {
-        system("cls");
-    }
-    myfile.open ("product.txt");
+void save_data()
+{
+    product a;
+    ofstream myfile;
+    myfile.open("product.txt");
     for(int i=0; i<a.total_product; i++)
     {
         a=product_list[i];
         a.save(myfile);
     }
     myfile.close();
+}
+
+int main()
+{
+    gather_previous_data();
+
+    write_date();
+
+    while(main_menu())
+    {
+        system("cls");
+    }
+
+    save_data();
+
     return 0;
 }
