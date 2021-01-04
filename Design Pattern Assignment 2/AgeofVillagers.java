@@ -21,14 +21,14 @@ public class AgeofVillagers {
 
         shape bluerectangle = new shape("Rectangle","Blue");
         shape blackhalfcircle = new shape("Half-Circle","Black");
-        shape pound = new shape("Pound","Blue");
-        pound.add(bluerectangle);
-        pound.add(blackhalfcircle);
+        shape pond = new shape("Pond","Blue");
+        pond.add(bluerectangle);
+        pond.add(blackhalfcircle);
 
         shape village = new shape("Village","Random");
         village.add(house);
         village.add(tree);
-        village.add(pound);
+        village.add(pond);
 
         System.out.println(village);
         village.printContains();
